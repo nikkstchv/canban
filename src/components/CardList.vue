@@ -4,6 +4,19 @@
     @drop="onDrop($event, options.id)"
     @dragover.prevent
     @dragenter.prevent>
+    <v-container>
+      <v-select
+        label="Сортировать по рейтингу"
+        v-model="select"
+        :items="items"
+        item-title="name"
+        item-value="sort"
+        return-object
+        variant="underlined"
+        density="compact"
+        color="white"
+      ></v-select>
+    </v-container>
     <div class="title">
       <h2>
         {{ options.title }}
@@ -38,7 +51,7 @@
 </template>
 
 <script setup>
-  import { ref, inject } from 'vue';
+  import { ref, inject, watch } from 'vue';
   import CardItem from './CardItem.vue';
   import CardForm from './CardForm.vue';
 
@@ -49,6 +62,13 @@
   const props = defineProps({
     options: {},
   });
+
+  const select = ref();
+  const items = [
+    { name: 'По возрастанию', sort: 'asc' },
+    { name: 'По убыванию', sort: 'desc' },
+    { name: 'Без сортировки', sort: 'default' },
+  ];
 
   const isNewCardDialogOpen = ref(false);
 
@@ -63,6 +83,20 @@
   });
 
   let cards = ref([]);
+
+  function sortList() {
+    switch (select.value.sort) {
+      case 'asc':
+        cards.value = cards.value.sort((a, b) => a.rating.rate - b.rating.rate);
+        break;
+      case 'desc':
+        cards.value = cards.value.sort((a, b) => b.rating.rate - a.rating.rate);
+        break;
+      case 'default':
+        cards.value = cards.value.sort((a, b) => a.id - b.id);
+        break;
+    }
+  }
 
   function getLocalCards() {
     switch (props.options.id) {
@@ -129,6 +163,8 @@
         break;
     }
   }
+
+  watch(select, sortList);
 </script>
 
 <style lang="scss" scoped>
@@ -160,4 +196,8 @@
       }
     }
   }
+  .v-container {
+    color: white !important;
+  }
+
 </style>
